@@ -172,7 +172,7 @@ void test5 (QCoreApplication &ap)
     class QThread *t = new QThread();
 
     QTimer *timer = new QTimer();
-    Worker5 *worker = new Worker2();
+    Worker5 *worker = new Worker5();
 
     QObject::connect(timer, SIGNAL(timeout()), worker, SLOT(onTimeout()));
     timer->start(1000);
@@ -184,11 +184,56 @@ void test5 (QCoreApplication &ap)
     t->start();
 }
 
+class Test6 : public QObject
+{
+    Q_OBJECT
+protected: 
+    bool event(QEvent *evt)
+    {
+        if (evt->type() == QEvent::User) {
+            qDebug()<<"Event received in thread"<<QThread::currentThreadId();
+            return true;
+        }
+        return QObject::event(evt);
+    }
+};
+
+class Button6 : public QPushButton
+{
+    Q_OBJECT
+    Test6 *m_test;
+public:
+    Button6(Test6 *test):QPushButton("Send Event"), m_test(test)
+    {
+        connect(this, SIGNAL(clicked()), SLOT(onClicked()));
+    }
+
+private slots:
+    void onClicked()
+    {
+        QCoreApplication::postEvent(m_test, new QEvent(QEvent::User));
+    }
+};
+
+void test6 (QApplication &ap)
+{
+    qDebug() << "Test6 From main thread: " << QThread::currentThreadId();
+
+    Test6 *test = new Test6();
+    Button6 *btn = new Button6(test);
+
+    QThread *th = new QThread();    //new line
+    test->moveToThread(th);         //new line
+    th->start();                    //new line
+
+    btn->show();
+}
+
 #include "main.moc"
 int main(int argc, char *argv[])
 {
-    QCoreApplication app(argc, argv);  // test1 mode
-//  QApplication app(argc, argv);  // test2 mode
+//  QCoreApplication app(argc, argv);  // test1 mode
+    QApplication app(argc, argv);  // test2/test6 mode
 
     qDebug()<<"start\n";
 
@@ -198,10 +243,13 @@ int main(int argc, char *argv[])
     // test2(app);
     /* objects located within that thread */
     // test3(app);
-    /*  */
+    /* QThread & Qtimer mixer use */
     // test4(app);
     /* how to call moveToThread */
-    test5(app);
+    // test5(app);
+
+    /* QCoreApplication::postEvent() */
+    test6(app);
 
     qDebug()<<"quit\n";
 
