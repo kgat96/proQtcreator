@@ -15,11 +15,101 @@ ImageView::ImageView()
     scrollArea->setWidget(imageLabel);
     setCentralWidget(scrollArea);
 
-//    createActions();
-//    createMenus();
+    createActions();
+    createMenus();
 
-    resize(QGuiApplication::primaryScreen()->availableSize() * 3 / 5);
+    resize(QGuiApplication::primaryScreen()->availableSize() * 1 / 5);
 
+//  loadFile(1);
+}
+
+void ImageView::updateActions()
+{
+    zoomInAct->setEnabled(!fitToWindowAct->isChecked());
+    zoomOutAct->setEnabled(!fitToWindowAct->isChecked());
+    normalSizeAct->setEnabled(!fitToWindowAct->isChecked());
+}
+
+bool ImageView::loadFile(const QString &fileName)
+{
+    QImage image(fileName);
+    if (image.isNull()) {
+        QMessageBox::information(this, QGuiApplication::applicationDisplayName(),
+                tr("Cannot load %1").arg(QDir::toNativeSeparators(fileName)));
+        setWindowFilePath(QString());
+        imageLabel->setPixmap(QString());
+        imageLabel->adjustSize();
+        return false;
+    }
+
+    imageLabel->setPixmap(QPixmap::fromImage(image));
+    scaleFactor = 1.0;
+
+    printAct->setEnabled(true);
+    fitToWindowAct->setEnabled(true);
+    updateActions();
+
+    if(!fitToWindowAct->isChecked())
+        imageLabel->adjustSize();
+
+    setWindowFilePath(fileName);
+    return true;
+}
+
+void ImageView::xloadFile(int count)
+{
+    QString fileName;
+
+    fileName = "./image/images1.jpe";
+    // this delay test async fun
+    QThread::msleep(count);
+    loadFile(fileName);
+
+    fileName =  "./image/images2.jpe";
+    // this delay test async fun
+    QThread::msleep(count);
+    loadFile(fileName);
+
+    fileName = "./image/images3.jpe";
+    // this delay test async fun
+    QThread::msleep(count);
+    loadFile(fileName);
+
+    fileName = "./image/images4.jpe";
+    // this delay test async fun
+    QThread::msleep(count);
+    loadFile(fileName);
+
+    fileName = "./image/images5.jpe";
+    // this delay test async fun
+    QThread::msleep(count);
+    loadFile(fileName);
+}
+
+void ImageView::open()
+{
+    QStringList mimeTypeFileters;
+    foreach(const QByteArray &mimeTypeName, QImageReader::supportedMimeTypes())
+        mimeTypeFileters.append(mimeTypeName);
+
+    mimeTypeFileters.sort();
+    const QStringList picturesLocations =
+            QStandardPaths::standardLocations(QStandardPaths::PicturesLocation);
+
+    for (int i = 0; i < picturesLocations.size(); ++i)
+         qDebug() << picturesLocations.at(i);
+
+    QFileDialog dialog(this, tr("Open File"),
+         picturesLocations.isEmpty() ? QDir::currentPath():picturesLocations.first());
+
+    dialog.setAcceptMode(QFileDialog::AcceptOpen);
+    dialog.setMimeTypeFilters(mimeTypeFileters);
+    dialog.selectMimeTypeFilter("image/jpeg");
+
+//    while(dialog.exec() == QDialog::Accepted &&
+//          !loadFile(dialog.selectedFiles().first()));
+    while(dialog.exec() != QDialog::Accepted);
+    loadFile(dialog.selectedFiles().first());
 }
 
 void ImageView::createActions()
@@ -48,7 +138,7 @@ void ImageView::createActions()
     connect(zoomOutAct, SIGNAL(triggered()), this, SLOT(zoomOut()));
 
     normalSizeAct = new QAction(tr("&Normal Size"), this);
-    normalSizeAct->setshortcut(tr("Ctrl+S"));
+    normalSizeAct->setShortcut(tr("Ctrl+S"));
     normalSizeAct->setEnabled(false);
     connect(normalSizeAct, SIGNAL(triggered()), this, SLOT(normalSize()));
 
@@ -62,7 +152,30 @@ void ImageView::createActions()
     connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
 
     aboutQtAct = new QAction(tr("About &Qt"), this);
-    connect(aboutQtActm, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+    connect(aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 }
 
+void ImageView::createMenus()
+{
+    fileMenu = new QMenu(tr("&File"), this);
+    fileMenu->addAction(openAct);
+    fileMenu->addAction(printAct);
+    fileMenu->addSeparator();
+    fileMenu->addAction(exitAct);
+
+    viewMenu = new QMenu(tr("&view"), this);
+    viewMenu->addAction(zoomInAct);
+    viewMenu->addAction(zoomOutAct);
+    viewMenu->addAction(normalSizeAct);
+    viewMenu->addSeparator();
+    viewMenu->addAction(fitToWindowAct);
+
+    helpMenu = new QMenu(tr("&Help"), this);
+    helpMenu->addAction(aboutAct);
+    helpMenu->addAction(aboutQtAct);
+
+    menuBar()->addMenu(fileMenu);
+    menuBar()->addMenu(viewMenu);
+    menuBar()->addMenu(helpMenu);
+}
 

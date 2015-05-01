@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    qDebug()<<"start\n";
+    qDebug()<<"start main thread " << QThread::currentThreadId();
 
     ImageView mImageView;
 
@@ -36,7 +36,10 @@ int main(int argc, char *argv[])
 
     mImageView.show();
 
-    qDebug()<<"quit\n";
+    class ImageThread *mImageThread = new ImageThread(mImageView, &ImageView::xloadFile);
+    mImageThread->start();
+
+    qDebug()<<"entry main loop ...\n";
 
     return app.exec();
 }
