@@ -10,7 +10,7 @@
 #include <QtCore>
 
 #include <QWidget>
-
+#include <QMouseEvent>
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -64,6 +64,11 @@ private slots:
 //    void normalSize();
 //    void fitToWindow();
 //    void about();
+
+protected:
+    void mousePressEvent(QMouseEvent *ev);
+    void mouseMoveEvent(QMouseEvent *ev);
+    void mouseReleaseEvent(QMouseEvent *ev);
 
 private:
     void createActions();

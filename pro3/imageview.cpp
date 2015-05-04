@@ -3,6 +3,25 @@
 
 #include "imageview.h"
 
+void ImageView::mouseMoveEvent(QMouseEvent *event)
+{
+    qDebug() << "mouseMoveEvent " << event->x();
+    event->accept();
+}
+
+void ImageView::mousePressEvent(QMouseEvent *event)
+{
+    qDebug() << "mousePressEvent " << event->button();
+    event->accept();
+}
+
+void ImageView::mouseReleaseEvent(QMouseEvent *event)
+{
+//  Qt::LeftButton; // define -- LeftButton 0001
+    qDebug() << "mouseReleaseEvent " << event->button();
+    event->accept();
+}
+
 ImageView::ImageView()
 {
     imageLabel = new QLabel;
