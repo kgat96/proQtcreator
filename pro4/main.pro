@@ -19,5 +19,4 @@ TEMPLATE = app
 
 SOURCES += main.cpp imageview.cpp
 
-HEADERS += imageview.h \
-    cmmd.h
+HEADERS += imageview.h cmmd.h
